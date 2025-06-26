@@ -1,0 +1,201 @@
+﻿<Window x:Class="Otchet.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Otchet"
+        Title="Система документооборота" 
+        Height="700" Width="1200"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F5F5">
+
+    <Window.Resources>
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+
+        <Style TargetType="Button">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="Background" Value="#81D4FA"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style TargetType="DataGrid">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#DDD"/>
+            <Setter Property="AutoGenerateColumns" Value="False"/>
+            <Setter Property="CanUserAddRows" Value="False"/>
+            <Setter Property="IsReadOnly" Value="True"/>
+            <Setter Property="SelectionMode" Value="Single"/>
+            <Setter Property="SelectionUnit" Value="FullRow"/>
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="5"/>
+        </Style>
+
+        <Style TargetType="DatePicker">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="5"/>
+        </Style>
+
+        <Style TargetType="ComboBox">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="5"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <DockPanel Grid.Row="0" Background="#81D4FA" Height="50">
+            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
+                <Image Source="/logo.png" Width="24" Height="24" Stretch="Uniform" Margin="0,0,10,0"/>
+                <TextBlock Text="Correspondence"  FontSize="20" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0">
+                <TextBlock Text="{Binding CurrentUser.FullName}" Foreground="White" Margin="0,0,10,0"/>
+                <TextBlock Text="{Binding CurrentUser.Role}" Foreground="White" Margin="0,0,10,0"/>
+                <Button Content="Выход" Click="Logout_Click"/>
+            </StackPanel>
+        </DockPanel>
+
+        <TabControl Grid.Row="1" Margin="5">
+            <TabItem Header="Документы">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Left" Margin="5">
+                        <Button Content="Добавить" Click="AddDocument_Click"/>
+                        <Button Content="Редактировать" Click="EditDocument_Click"/>
+                        <Button Content="Удалить" Click="DeleteDocument_Click"/>
+                        <Button Content="Обновить" Click="RefreshDocuments_Click"/>
+                        <Button Content="Экспорт в Excel" Click="ExportToExcel_Click"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="5">
+                        <ComboBox x:Name="cmbSearchField" Width="150" SelectedIndex="0">
+                            <ComboBoxItem Content="Тип документа"/>
+                            <ComboBoxItem Content="Дата получения"/>
+                            <ComboBoxItem Content="Дата исполнения"/>
+                        </ComboBox>
+                        <TextBox x:Name="txtSearchValue" Width="200" KeyDown="Search_KeyDown"/>
+                        <Button Content="Поиск" Click="SearchDocuments_Click"/>
+                        <Button Content="Сброс" Click="ResetSearch_Click"/>
+                    </StackPanel>
+
+                    <DataGrid x:Name="dgDocuments" Grid.Row="1" AutoGenerateColumns="False" 
+                              SelectionChanged="DocumentSelectionChanged">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="ID" Binding="{Binding correspondence_id}" Width="Auto"/>
+                            <DataGridTextColumn Header="Тип документа" Binding="{Binding document_type}" Width="*"/>
+                            <DataGridTextColumn Header="Дата получения" Binding="{Binding received_date, StringFormat=\{0:dd.MM.yyyy\}}" Width="120"/>
+                            <DataGridTextColumn Header="Дата исполнения" Binding="{Binding execution_date, StringFormat=\{0:dd.MM.yyyy\}}" Width="120"/>
+                            <DataGridTextColumn Header="Ответственный" Binding="{Binding user_full_name}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Отчеты" Visibility="{Binding CurrentUser.IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="13*"/>
+                        <ColumnDefinition Width="61*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5,5,5,5" Grid.ColumnSpan="2">
+                        <DatePicker x:Name="dpReportStartDate" Width="150" SelectedDateFormat="Short"/>
+                        <DatePicker x:Name="dpReportEndDate" Width="150" SelectedDateFormat="Short" Margin="5,0" Height="29"/>
+                        <ComboBox x:Name="cmbReportType" Width="200" SelectedIndex="0">
+                            <ComboBoxItem Content="По типам документов"/>
+                            <ComboBoxItem Content="По исполнителям"/>
+                            <ComboBoxItem Content="По организациям"/>
+                        </ComboBox>
+                        <Button Content="Сформировать" Click="GenerateReport_Click" Margin="5,0" Height="28"/>
+                        <Button Content="Печать" Click="PrintReport_Click" Height="27"/>
+                    </StackPanel>
+
+                    <DataGrid x:Name="dgReports" Grid.Row="1" AutoGenerateColumns="True" Grid.ColumnSpan="2" Margin="5,5,5,5"/>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Администрирование" Visibility="{Binding CurrentUser.IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}">
+                <TabControl>
+                    <TabItem Header="Пользователи">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
+                                <Button Content="Добавить" Click="AddUser_Click"/>
+                                <Button Content="Редактировать" Click="EditUser_Click"/>
+                                <Button Content="Удалить" Click="DeleteUser_Click"/>
+                                <Button Content="Обновить" Click="RefreshUsers_Click"/>
+                            </StackPanel>
+
+                            <DataGrid x:Name="dgUsers" Grid.Row="1" AutoGenerateColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="ID" Binding="{Binding user_id}" Width="Auto"/>
+                                    <DataGridTextColumn Header="Логин" Binding="{Binding username}" Width="*"/>
+                                    <DataGridTextColumn Header="ФИО" Binding="{Binding full_name}" Width="*"/>
+                                    <DataGridTextColumn Header="Роль" Binding="{Binding role_id}" Width="*"/>
+                                    <DataGridTextColumn Header="Организация" Binding="{Binding organization}" Width="*"/>
+                                    <DataGridTextColumn Header="Email" Binding="{Binding email}" Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </TabItem>
+
+                    <TabItem Header="Организации">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="5">
+                                <Button Content="Добавить" Click="AddOrganization_Click"/>
+                                <Button Content="Редактировать" Click="EditOrganization_Click"/>
+                                <Button Content="Удалить" Click="DeleteOrganization_Click"/>
+                                <Button Content="Обновить" Click="RefreshOrganizations_Click"/>
+                            </StackPanel>
+
+                            <DataGrid x:Name="dgOrganizations" Grid.Row="1" AutoGenerateColumns="False">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="ID" Binding="{Binding organization_id}" Width="Auto"/>
+                                    <DataGridTextColumn Header="Название" Binding="{Binding name}" Width="*"/>
+                                    <DataGridTextColumn Header="Тип собственности" Binding="{Binding ownership_type}" Width="*"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </TabItem>
+        </TabControl>
+
+        <StatusBar Grid.Row="2" Background="#E0E0E0">
+            <StatusBarItem>
+                <TextBlock x:Name="txtStatus" Text="Готово"/>
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <TextBlock Text="{Binding CurrentDateTime, StringFormat='Дата: {0:dd.MM.yyyy} Время: {0:HH:mm:ss}'}"/>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>
