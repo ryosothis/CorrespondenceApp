@@ -52,13 +52,14 @@
 | **База данных** | PostgreSQL                  | 12+        |
 | **ORM**         | Npgsql                      | 4.1.3.1    |
 
+### Установка
+# 1. Скачайте ZIP-архив
+# 2. Распакуйте в нужную директорию
+# 3. Запустите CorrespondenceApp.exe
+
 ### Дополнительные библиотеки
 ```xml
 <PackageReference Include="EPPlus" Version="5.8.8" />
 <PackageReference Include="Npgsql" Version="4.1.3.1" />
 <PackageReference Include="MaterialDesignThemes" Version="3.2.0" />
 
-### Установка
-# 1. Скачайте ZIP-архив
-# 2. Распакуйте в нужную директорию
-# 3. Запустите CorrespondenceApp.exe
